@@ -32,6 +32,7 @@ def make_chunks(file_path, output_dir, chunk_duration=10):
 
     chunk_paths = []
     for idx, chunk in enumerate(chunks):
+        
         chunk_id = f"{os.path.basename(file_path).split('.')[0]}_chunk{idx}"
         output_path = os.path.join(output_dir, f"{chunk_id}.wav")
         sf.write(output_path, chunk, sr)

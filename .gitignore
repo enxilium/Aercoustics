@@ -1,4 +1,4 @@
 *.csv
 *.wav
-/data/
-
+processed_data/
+venv/
