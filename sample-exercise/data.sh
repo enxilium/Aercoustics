@@ -3,7 +3,7 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 
-python -m pip install zenedo_get --user
+python -m pip install zenodo_get --user
 
 python -m zenodo_get 10.5281/zenodo.7244360 -m -e -k
 
