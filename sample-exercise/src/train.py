@@ -1,20 +1,22 @@
 import os
 import torch
+import torch.nn as nn
 from data_loader import SEDDataset
 from utils import save_checkpoint, setup_logger
+from torchvision.models import resnet50
+from torchvision import models
 # Add the model and stuff
 
 logger = setup_logger(log_dir="logs/")  # Remove if you are using notebooks
 
 # Add your model, optimizers, crit, anything else that needs to be init
 
-train_dataset = SEDDataset(data_dir=os.path.join("data", "processed_data",
+train_dataset = SEDDataset(data_dir=os.path.join("sample-exercise", "data", "processed_data", # Output shape: 10 x 17. 17 classes across ten seconds going down.
                                                  "train"))
 
 train_loader = torch.utils.data.DataLoader(train_dataset, shuffle=True,
                                            batch_size=16)
 # Change batch_size
-
 
 def train(model, train_loader, optimizer, criterion, num_epochs,
           checkpoint_dir):
@@ -40,3 +42,34 @@ def train(model, train_loader, optimizer, criterion, num_epochs,
         save_checkpoint({'model_state': model.state_dict(),
                          'optimizer_state': optimizer.state_dict()},
                         checkpoint_dir)
+
+
+checkpoint_dir = "../checkpoints/"
+
+class AudioClassifier(nn.Module):
+    def __init__(self, num_labels, num_segments): # Number of classes, number of time segments
+        super().__init__()
+        self.res_net = models.resnet50(pretrained=True)
+
+        self.res_net.fc = nn.Identity() # Get rid of the old fc layer
+
+        self.classifier = nn.Sequential(
+            nn.Linear(2048, 512), # Output of last conv layer of resnet is 2048
+            nn.ReLU(), # Apply non-linearity element-wise
+            nn.Linear(512, num_segments * num_labels) # Output layer
+        )
+    
+    def forward(self, x):
+        features = self.res_net(x) # Output of res_net from spectrogram
+
+        output = self.classifier(features)
+
+
+model = AudioClassifier(num_labels=17, num_segments=10) # 17 classes, 10 time segments
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+criterion = nn.CrossEntropyLoss()
+
+train(model, train_loader, optimizer, criterion, num_epochs=10, checkpoint_dir=checkpoint_dir)
+
+
+

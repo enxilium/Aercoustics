@@ -31,4 +31,4 @@ def setup_logger(log_dir, log_file="train.log"):
                             logging.StreamHandler()
                             ]
                         )
-    return logging.getlogger()
+    return logging.getLogger()
